@@ -1,0 +1,137 @@
+{
+  "name": "JSONPlaceholder Posts -> Postgres ODS",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "load-posts",
+        "responseMode": "onReceived"
+      },
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://jsonplaceholder.typicode.com/posts",
+        "responseFormat": "json"
+      },
+      "id": "HTTP",
+      "name": "Fetch Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        520,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.map(i => ({ json: {\n  source_name: 'jsonplaceholder.posts',\n  post_id: i.json.id,\n  user_id: i.json.userId,\n  title: i.json.title,\n  body: i.json.body\n}}));"
+      },
+      "id": "Map",
+      "name": "Map Fields",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        760,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into ods.api_posts(post_id, user_id, title, body, ingested_at)\nvalues ({{$json.post_id}}, {{$json.user_id}}, {{$json.title}}, {{$json.body}}, now())\non conflict (post_id) do update set user_id=excluded.user_id, title=excluded.title, body=excluded.body, ingested_at=excluded.ingested_at;"
+      },
+      "id": "PGInsert",
+      "name": "Upsert Posts (Postgres)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        1010,
+        220
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Postgres Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into ods.load_control(source_name, status) values ('jsonplaceholder.posts', 'OK');"
+      },
+      "id": "PGControl",
+      "name": "Write load_control (Postgres)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        220
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Postgres Local"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Posts": {
+      "main": [
+        [
+          {
+            "node": "Map Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Fields": {
+      "main": [
+        [
+          {
+            "node": "Upsert Posts (Postgres)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Posts (Postgres)": {
+      "main": [
+        [
+          {
+            "node": "Write load_control (Postgres)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "meta": {
+    "note": "Replace POSTGRES_CREDENTIAL_ID after import; create Postgres credential in n8n UI."
+  }
+}

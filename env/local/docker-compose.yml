@@ -52,3 +52,63 @@ services:
 volumes:
   pg_data:
   n8n_data:
+
+
+# Optional: Kafka UI
+kafdrop:
+  image: obsidiandynamics/kafdrop:latest
+  container_name: de_kafdrop
+  depends_on:
+    - kafka
+  ports:
+    - "9000:9000"
+  environment:
+    KAFKA_BROKERCONNECT: "kafka:29092"
+    JVM_OPTS: "-Xms32M -Xmx128M"
+
+
+kafka_init:
+  image: confluentinc/cp-kafka:7.6.1
+  container_name: de_kafka_init
+  depends_on:
+    - kafka
+  entrypoint: ["/bin/bash","-lc"]
+  command: >
+    "
+    echo 'Waiting for Kafka...' &&
+    cub kafka-ready -b kafka:29092 1 40 &&
+    kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists
+      --topic demo.posts --partitions 1 --replication-factor 1 &&
+    echo 'Topic ensured: demo.posts'
+    "
+  restart: "no"
+
+kafka_consumer:
+  build:
+    context: ../../apps/kafka_consumer
+  container_name: de_kafka_consumer
+  depends_on:
+    - kafka_init
+    - postgres
+  environment:
+    KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+    KAFKA_TOPIC: "demo.posts"
+    KAFKA_GROUP_ID: "ods-loader"
+    PGHOST: "postgres"
+    PGPORT: "5432"
+    PGDATABASE: ${POSTGRES_DB}
+    PGUSER: ${POSTGRES_USER}
+    PGPASSWORD: ${POSTGRES_PASSWORD}
+  restart: unless-stopped
+
+kafka_producer:
+  build:
+    context: ../../apps/kafka_producer
+  container_name: de_kafka_producer
+  depends_on:
+    - kafka_init
+  environment:
+    KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+    KAFKA_TOPIC: "demo.posts"
+    PRODUCE_COUNT: "25"
+  restart: "no"

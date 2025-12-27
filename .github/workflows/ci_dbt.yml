@@ -10,16 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install dbt-core (postgres adapter)
         run: |
           python -m pip install --upgrade pip
           pip install dbt-core dbt-postgres
-
       - name: dbt parse (syntax/manifest)
         working-directory: pipelines/dbt/project
-        env:
-          DBT_PROFILES_DIR: .github_profiles
         run: |
           dbt --version
           dbt parse

@@ -30,3 +30,14 @@ Enthält:
 ## Contributing
 - Änderungen via Pull Request
 - Architektur-Entscheidungen als ADR in `docs/04_adr/`
+
+
+## v0.2 Highlights
+- n8n Flow (JSONPlaceholder -> Postgres ODS)
+- Kafka Event Contract Beispiel unter `contracts/kafka/`
+- Streamlit KPI Demo in `apps/streamlit_ui/`
+
+
+## v0.2.1 Highlights
+- Kafka Demo: Topic `demo.posts` -> Python Consumer -> Postgres `ods.kafka_posts`
+- One-shot Producer Container: `docker compose run --rm kafka_producer`

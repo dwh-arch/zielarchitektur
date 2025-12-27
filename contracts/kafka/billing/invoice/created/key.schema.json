@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "billing.invoice.created.key",
+  "type": "object",
+  "required": [
+    "invoice_id"
+  ],
+  "properties": {
+    "invoice_id": {
+      "type": "string",
+      "description": "Business identifier of the invoice"
+    }
+  },
+  "additionalProperties": false
+}
