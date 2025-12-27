@@ -1,0 +1,12 @@
+zielarchitektur_dbt:
+  target: ci
+  outputs:
+    ci:
+      type: postgres
+      host: localhost
+      user: dummy
+      password: dummy
+      port: 5432
+      dbname: dummy
+      schema: public
+      threads: 1
