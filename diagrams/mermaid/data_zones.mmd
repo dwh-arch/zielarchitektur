@@ -1,0 +1,32 @@
+flowchart TB
+  subgraph Ingest["Ingest"]
+    S1[Sources: API/File/DB]
+    K[(Kafka Topics)]
+  end
+
+  subgraph ODS["ODS (Operational Data Store) - Postgres"]
+    O1[Staging Schemas]
+    O2[ODS Core Tables]
+  end
+
+  subgraph Lakehouse["Lakehouse Zones"]
+    B[Bronze - Raw]
+    S[Silver - Clean/Conformed]
+    G[Gold - Curated/Products]
+  end
+
+  subgraph Vault["Data Vault"]
+    R[Raw Vault]
+    BV[Business Vault]
+  end
+
+  subgraph Mart["OLAP / Marts"]
+    D[Dimensional Model]
+    M[Metrics/Measures]
+  end
+
+  S1 --> K --> O1 --> O2
+  O2 --> B --> S --> G
+  B --> R --> BV
+  BV --> D --> M
+  G --> D

@@ -1,0 +1,57 @@
+flowchart LR
+  subgraph Sources["Quellen"]
+    A[APIs]
+    F[Files/CSV]
+    L[Legacy: Access]
+  end
+
+  subgraph Integration["Integration & Orchestration"]
+    K[(Kafka)]
+    N[n8n Workflows]
+    API[Node.js API]
+  end
+
+  subgraph Storage["Storage / Data Platform"]
+    ODS[(Postgres ODS)]
+    LH[(Lakehouse Bronze/Silver/Gold)]
+    DV[(Data Vault: Raw/Business)]
+    OLAP[(OLAP / Marts)]
+  end
+
+  subgraph Processing["Processing / Transformation"]
+    DBT[dbt]
+    SP[Spark]
+    DBrx[Databricks]
+  end
+
+  subgraph Experience["Experience / Consumption"]
+    ST[Streamlit UI]
+    PBI[Power BI]
+    SIM[Anylogic]
+    DS[Data Science / AI]
+  end
+
+  subgraph Control["AI / Control Plane"]
+    AG[Agent Service]
+    MCP[MCP Pattern/Connectors]
+  end
+
+  A --> K
+  F --> N
+  L --> N
+  N --> ODS
+  K --> SP
+  SP --> ODS
+  ODS --> DBT
+  DBT --> OLAP
+  SP --> LH
+  DBrx --> LH
+  LH --> DV
+  DV --> OLAP
+
+  OLAP --> PBI
+  OLAP --> ST
+  LH --> DS
+  AG --> MCP
+  MCP --> API
+  API --> ST

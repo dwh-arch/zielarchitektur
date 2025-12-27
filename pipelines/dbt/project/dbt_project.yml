@@ -1,0 +1,13 @@
+name: "zielarchitektur_dbt"
+version: "0.1.0"
+config-version: 2
+
+profile: "zielarchitektur_dbt"
+
+model-paths: ["models"]
+models:
+  zielarchitektur_dbt:
+    staging:
+      +schema: staging
+    marts:
+      +schema: mart
